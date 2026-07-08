@@ -13,6 +13,21 @@ This repository contains the scripts used in the paper:
 ## Repository Contents
 
 * **3D Visualization Script (JavaScript):** Designed to be imported into Cesium Sandcastle, this script creates and visualizes UUDM-standardized 3D utilities, 3D buildings, and underground parcel geometries. The script can be adapted to represent other UUDM databases or parcels globally.
-* **Spatial Claim Calculator (Python):** A script that evaluates the level of existing spatial congestion within a specific parcel (categorized as High, Medium, or Low). It calculates this by comparing the legal volume occupied by existing utilities against the total 3D volume of the underground parcel. Congestion is measured as a percentage (e.g., if utilities occupy 70% of the underground parcel, it is classified as high congestion).
 * **3D Congestion Simulator (Python):** A sophisticated 3D voxel-based pathfinding script that simulates routing new utilities through dense underground networks. By applying real-world engineering constraints—such as orthogonal turn penalties and surface cover depth limits—it calculates precise, empirical Space Utilization Index (SUI) thresholds (e.g., proving that geometric locking creates "High" congestion at just 16.3% SUI).
+* **Spatial Claim Calculator (Python):** A script that evaluates the level of existing spatial congestion within a specific parcel (categorized as High, Medium, or Low). It calculates this by comparing the legal volume occupied by existing utilities against the total 3D volume of the underground parcel. Congestion is measured as a percentage (e.g., if utilities occupy 70% of the underground parcel, it is classified as high congestion).
 
+### Example Scenarios
+
+**Scenario 1: Shared Utility Trench (High Congestion)**
+In this scenario, a single tight bounding box is generated around a bundle of 4 distinct shallow utility pipes (Cooling, Power, Telecom, and Water).
+
+- Calculated SUI: 68.91%
+- Status: HIGH Congestion
+- Analysis: Because the bounding box hugs these 4 parallel pipes tightly with only a 1.5m buffer, the vast majority of the volume inside this box is consumed by the statutory legal space of the pipes. This is highly congested space where routing a new pipe would be nearly impossible without a path deviation >20%.
+
+**Scenario 2: Deep Infrastructure Easement (Low Congestion)**
+In this scenario, a bounding box is generated solely for the massive MRT Tunnel running deep underground.
+
+- Calculated SUI: 4.48%
+- Status: LOW Congestion
+- Analysis: The MRT tunnel is huge, but it is the only object in this generated parcel. The 1.5m legal space buffer around the cylinder leaves a lot of empty corners within the rectangular bounding box, resulting in a low SUI. There is no other intersecting utility preventing routing parallel to this tunnel.
