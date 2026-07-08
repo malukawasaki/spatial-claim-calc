@@ -21,12 +21,16 @@ This repository contains the scripts used in the paper:
 **Scenario 1: Shared Utility Trench (High Congestion)**
 In this scenario, a single tight bounding box is generated around a bundle of 4 distinct shallow utility pipes (Cooling, Power, Telecom, and Water).
 
+<img width="1000" height="600" alt="scenario1" src="https://github.com/user-attachments/assets/785e11cc-a84c-4799-842e-513e9348fcf0" />
+
 - Calculated SUI: 68.91%
 - Status: HIGH Congestion
 - Analysis: Because the bounding box hugs these 4 parallel pipes tightly with only a 1.5m buffer, the vast majority of the volume inside this box is consumed by the statutory legal space of the pipes. This is highly congested space where routing a new pipe would be nearly impossible without a path deviation >20%.
 
 **Scenario 2: Deep Infrastructure Easement (Low Congestion)**
 In this scenario, a bounding box is generated solely for the massive MRT Tunnel running deep underground.
+
+<img width="1000" height="600" alt="scenario2" src="https://github.com/user-attachments/assets/4e9f245c-712a-4fd9-b232-df3e948e8f70" />
 
 - Calculated SUI: 4.48%
 - Status: LOW Congestion
