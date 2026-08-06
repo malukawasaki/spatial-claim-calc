@@ -24,7 +24,6 @@ Usage
 Dependencies: trimesh, numpy, pygltflib, shapely, matplotlib
 """
 
-import json
 import logging
 import sys
 from datetime import date
@@ -164,22 +163,24 @@ def _build_3d_endpoints(rec):
 # PARCEL definition — matches cesium_sandcastle_snippet.js entity
 # ---------------------------------------------------------------------------
 
-_PARCEL_CENTRE = np.array([10.0, 30.0, -12.5])   # local CRS metres
-_PARCEL_EXTENTS = np.array([50.0, 30.0, 25.0])   # X × Y × Z metres
+_PARCEL_CENTRE = np.array([75.0, 0.0, -12.5])    # local CRS metres — centred on shallow utility corridor (Y=0)
+_PARCEL_EXTENTS = np.array([150.0, 10.0, 25.0])  # X × Y × Z metres — spans full utility run
 
+# CLIMA-LADM metadata for the sample parcel (ISO 19152-5:2024).
+# glTF extras only support flat key-value pairs (strings/numbers).
+# Nested CLIMA-LADM sub-fields are prefixed with "climaAdaptation_" so any
+# reader can consume them directly without an extra json.loads() call.
 _CLIMA_LADM_EXTRAS = {
-    "LADM_Class": "ExtSpatialClaim",
-    "LADM_Standard": "ISO 19152-5:2024",
-    "parcelId": "MarinaBay_Sample_Parcel",
-    "administrativeSource": "Singapore_SLA",
-    "referenceFrame": "SVY21",
-    "verticalDatum": "Singapore_Height_Datum",
-    "registrationDate": str(date.today()),
-    "climaAdaptation": json.dumps({
-        "profile": "CLIMA_LADM",
-        "hazardCategory": "Underground_Congestion",
-        "riskLevel": "TBD",
-    }),
+    "LADM_Class":                    "ExtSpatialClaim",
+    "LADM_Standard":                 "ISO 19152-5:2024",
+    "parcelId":                      "MarinaBay_Sample_Parcel",
+    "administrativeSource":          "Singapore_SLA",
+    "referenceFrame":                "SVY21",
+    "verticalDatum":                 "Singapore_Height_Datum",
+    "registrationDate":              str(date.today()),
+    "climaAdaptation_profile":       "CLIMA_LADM",
+    "climaAdaptation_hazardCategory":"Underground_Congestion",
+    "climaAdaptation_riskLevel":     "TBD",
 }
 
 

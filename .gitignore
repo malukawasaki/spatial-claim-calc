@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+dist/
+build/
+
+# Scratch / one-off debug scripts (not part of the reproducible pipeline)
+scratch_*.py
+temp_*.glb
+decode_gltf.js
+export_glb.py
+fix_sandcastle.py
+fix_sandcastle_split.py
+generate_full_bbox.py
+full_network_parcel.obj
+test_parcel.obj
+test_parcel.py
+test_gltf_extras.py
+test_names.py
+code_review_analysis.md
+parcel_geometry.png
+
+# Legacy utility GLB (superseded by sample_uudm_utilities.glb)
+marina_bay_synthetic_utilities.glb

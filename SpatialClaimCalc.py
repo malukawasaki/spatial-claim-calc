@@ -203,8 +203,16 @@ class SpatialClaimCalc:
             uudm_claims.append(uudm_data)
 
             try:
-                # Voxelise the clipped physical pipe geometry
-                vox = cropped_mesh.voxelized(pitch=resolution)
+                # Voxelise the clipped physical pipe geometry.
+                # trimesh defaults to max_iter=10, which is exhausted by long pipe
+                # cylinders (e.g. 150 m at 0.25 m resolution needs ~600 iterations).
+                # Compute a safe limit from the mesh diagonal in voxel units.
+                mesh_diag_voxels = int(np.ceil(
+                    np.linalg.norm(cropped_mesh.bounds[1] - cropped_mesh.bounds[0])
+                    / resolution
+                ))
+                safe_max_iter = max(50, mesh_diag_voxels * 2)
+                vox = cropped_mesh.voxelized(pitch=resolution, max_iter=safe_max_iter)
 
                 # binary_fill_holes fills enclosed interior voids of the voxel solid.
                 # Note: for slice_plane-clipped open cylinders the fill may be a no-op;
