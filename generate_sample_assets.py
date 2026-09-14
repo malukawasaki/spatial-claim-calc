@@ -1,33 +1,21 @@
 """
-generate_sample_assets.py — Sample GLB Asset Generator
+generate_sample_assets.py — Realistic Urban Cadastral Lot & Subsurface Network
 
-Produces two stand-alone, user-replaceable GLB files for use with SpatialClaimCalc.py:
+Produces two stand-alone GLB files:
+  1. sample_uudm_utilities.glb:
+     Synthetic Marina Bay multi-utility network with road verge services 
+     and an oblique diagonal MRT tunnel.
+  2. sample_ladm_parcel.glb:
+     A realistic urban mixed-use development parcel (50 m × 25 m × 30 m)
+     centred at [45.0, 0.0, -15.0], intersecting both boundary utility 
+     easements and deep transit protection reserves.
 
-  sample_uudm_utilities.glb
-      Six underground utility pipe cylinders (Marina Bay synthetic network).
-      Geometry and attributes mirror cesium_sandcastle_snippet.js.
-      glTF node extras carry strict UUDM semantic metadata (Yan et al., 2021).
-
-  sample_ladm_parcel.glb
-      A single box parcel [50 m × 30 m × 25 m] centred at [10, 30, -12.5].
-      Matches the "MarinaBay_Parcel" entity in cesium_sandcastle_snippet.js.
-      glTF node extras carry CLIMA-LADM metadata (ISO 19152-5:2024).
-
-  sample_geometry_preview.png
-      Combined 3D matplotlib figure — utilities (colour-coded) + parcel (transparent
-      wireframe box) — for quick visual validation.
-
-Usage
------
+Usage:
     python generate_sample_assets.py
-
-Dependencies: trimesh, numpy, pygltflib, shapely, matplotlib
 """
 
 import logging
-import sys
 from datetime import date
-
 import numpy as np
 import trimesh
 import trimesh.transformations as tf
@@ -40,12 +28,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("generate_sample_assets")
 
-# ---------------------------------------------------------------------------
-# Geometry helpers
-# ---------------------------------------------------------------------------
-
 def _cylinder_from_endpoints(p1, p2, radius, sections=32):
-    """Return a trimesh.Trimesh cylinder aligned from p1 to p2."""
     p1 = np.array(p1, dtype=float)
     p2 = np.array(p2, dtype=float)
     vec = p2 - p1
@@ -54,7 +37,6 @@ def _cylinder_from_endpoints(p1, p2, radius, sections=32):
         raise ValueError(f"Degenerate cylinder: p1={p1}, p2={p2}")
 
     cyl = trimesh.creation.cylinder(radius=radius, height=length, sections=sections)
-
     direction = vec / length
     z_axis = np.array([0.0, 0.0, 1.0])
     axis = np.cross(z_axis, direction)
@@ -73,164 +55,114 @@ def _cylinder_from_endpoints(p1, p2, radius, sections=32):
     cyl.apply_translation((p1 + p2) / 2.0)
     return cyl
 
-
 # ---------------------------------------------------------------------------
-# Utility definitions — sourced from cesium_sandcastle_snippet.js
+# Utility Definitions
 # ---------------------------------------------------------------------------
-
-# Each entry: id, type, radius_m, depth_start_m, depth_end_m, path_2d
 _UTILITY_RECORDS = [
     {
-        "id": "DCS-MB-001",
-        "type": "DISTRICT_COOLING",
-        "radius": 0.8,
-        "depth_start": -6.0,
-        "depth_end": -6.0,
-        "path_2d": [(0, 0), (150, 0)],
-        "material": "Steel",
-        "operator": "SP_Group",
-        "color": [0, 200, 255, 200],   # Cyan
-    },
-    {
-        "id": "MRT-NSL-001",
-        "type": "MRT_TUNNEL",
-        "radius": 3.0,
-        "depth_start": -20.0,
-        "depth_end": -25.0,
-        "path_2d": [(20, -50), (20, 150)],
-        "material": "Steel",
-        "operator": "SMRT",
-        "color": [220, 50, 50, 200],   # Red
+        "id": "TEL-FIBER-01",
+        "type": "TELECOM",
+        "radius": 0.1,
+        "depth_start": -2.0, "depth_end": -2.0,
+        "path_2d": [(0.0, -2.0), (150.0, -2.0)],  # Frontage edge
+        "material": "HDPE", "operator": "Singtel",
+        "color": [50, 220, 50, 200],
     },
     {
         "id": "PWR-22KV-01",
         "type": "POWER_CABLE",
         "radius": 0.15,
-        "depth_start": -2.5,
-        "depth_end": -2.5,
-        "path_2d": [(0, 0), (150, 0)],
-        "material": "HDPE",
-        "operator": "Singapore_Power",
-        "color": [255, 165, 0, 200],   # Orange
-    },
-    {
-        "id": "TEL-FIBER-01",
-        "type": "TELECOM",
-        "radius": 0.1,
-        "depth_start": -2.0,
-        "depth_end": -2.0,
-        "path_2d": [(0, 0), (150, 0)],
-        "material": "HDPE",
-        "operator": "Singtel",
-        "color": [50, 220, 50, 200],   # Green
+        "depth_start": -2.5, "depth_end": -2.5,
+        "path_2d": [(0.0, -1.0), (150.0, -1.0)],  # Frontage edge
+        "material": "HDPE", "operator": "Singapore_Power",
+        "color": [255, 165, 0, 200],
     },
     {
         "id": "WAT-POT-01",
         "type": "WATER_PIPE",
         "radius": 0.3,
-        "depth_start": -3.5,
-        "depth_end": -3.5,
-        "path_2d": [(0, 0), (150, 0)],
-        "material": "Steel",
-        "operator": "PUB",
-        "color": [30, 100, 255, 200],  # Blue
+        "depth_start": -3.5, "depth_end": -3.5,
+        "path_2d": [(0.0, 1.0), (150.0, 1.0)],
+        "material": "Steel", "operator": "PUB",
+        "color": [30, 100, 255, 200],
+    },
+    {
+        "id": "DCS-MB-001",
+        "type": "DISTRICT_COOLING",
+        "radius": 0.8,
+        "depth_start": -6.0, "depth_end": -6.0,
+        "path_2d": [(0.0, 2.5), (150.0, 2.5)],
+        "material": "Steel", "operator": "SP_Group",
+        "color": [0, 200, 255, 200],
+    },
+    {
+        "id": "MRT-NSL-001",
+        "type": "MRT_TUNNEL",
+        "radius": 3.0,
+        "depth_start": -20.0, "depth_end": -25.0,
+        # Diagonal traverse directly slicing across the parcel footprint:
+        "path_2d": [(10.0, -30.0), (80.0, 30.0)],
+        "material": "Steel", "operator": "SMRT",
+        "color": [220, 50, 50, 200],
     },
     {
         "id": "DTSS-MB-01",
         "type": "SEWER_TUNNEL",
         "radius": 1.5,
-        "depth_start": -40.0,
-        "depth_end": -42.0,
-        "path_2d": [(-50, 100), (200, 100)],
-        "material": "Concrete",
-        "operator": "PUB",
-        "color": [139, 69, 19, 200],   # Brown
+        "depth_start": -40.0, "depth_end": -42.0,
+        "path_2d": [(-20.0, 0.0), (180.0, 0.0)],  # Far beneath parcel floor
+        "material": "Concrete", "operator": "PUB",
+        "color": [139, 69, 19, 200],
     },
 ]
 
-
 def _build_3d_endpoints(rec):
-    """Interpolate depth across the 2D path to produce 3D endpoints."""
     path = rec["path_2d"]
-    ds, de = rec["depth_start"], rec["depth_end"]
-    if len(path) == 2:
-        return (path[0][0], path[0][1], ds), (path[1][0], path[1][1], de)
-    # Multi-segment: use first and last only (single segment assumed for these records)
-    return (path[0][0], path[0][1], ds), (path[-1][0], path[-1][1], de)
-
+    return (path[0][0], path[0][1], rec["depth_start"]), (path[1][0], path[1][1], rec["depth_end"])
 
 # ---------------------------------------------------------------------------
-# PARCEL definition — matches cesium_sandcastle_snippet.js entity
+# REALISTIC URBAN PARCEL (Matching Magenta Box)
+# Dimensions: 50 m (X: [20, 70]) × 25 m (Y: [-12.5, 12.5]) × 30 m (Z: [0, -30])
 # ---------------------------------------------------------------------------
+_PARCEL_CENTRE = np.array([45.0, 0.0, -15.0])
+_PARCEL_EXTENTS = np.array([50.0, 25.0, 30.0])  # Area: 1,250 m2, Volume: 37,500 m3
 
-_PARCEL_CENTRE = np.array([75.0, 0.0, -12.5])    # local CRS metres — centred on shallow utility corridor (Y=0)
-_PARCEL_EXTENTS = np.array([150.0, 10.0, 25.0])  # X × Y × Z metres — spans full utility run
-
-# CLIMA-LADM metadata for the sample parcel (ISO 19152-5:2024).
-# glTF extras only support flat key-value pairs (strings/numbers).
-# Nested CLIMA-LADM sub-fields are prefixed with "climaAdaptation_" so any
-# reader can consume them directly without an extra json.loads() call.
 _CLIMA_LADM_EXTRAS = {
-    "LADM_Class":                    "ExtSpatialClaim",
-    "LADM_Standard":                 "ISO 19152-5:2024",
-    "parcelId":                      "MarinaBay_Sample_Parcel",
-    "administrativeSource":          "Singapore_SLA",
-    "referenceFrame":                "SVY21",
-    "verticalDatum":                 "Singapore_Height_Datum",
-    "registrationDate":              str(date.today()),
-    "climaAdaptation_profile":       "CLIMA_LADM",
-    "climaAdaptation_hazardCategory":"Underground_Congestion",
-    "climaAdaptation_riskLevel":     "TBD",
+    "LADM_Class":                     "ExtSpatialClaim",
+    "LADM_Standard":                  "ISO 19152-5:2024",
+    "parcelId":                       "MarinaBay_Commercial_Lot401",
+    "administrativeSource":           "Singapore_SLA",
+    "referenceFrame":                 "SVY21",
+    "verticalDatum":                  "Singapore_Height_Datum",
+    "registrationDate":               str(date.today()),
+    "climaAdaptation_profile":        "CLIMA_LADM",
+    "climaAdaptation_hazardCategory": "Underground_Congestion",
+    "climaAdaptation_riskLevel":      "TBD",
 }
 
-
-# ---------------------------------------------------------------------------
-# GLB generation: UUDM utilities
-# ---------------------------------------------------------------------------
-
 def generate_uudm_utilities_glb(output_path: str = "sample_uudm_utilities.glb"):
-    """
-    Build six utility pipe cylinders from cesium_sandcastle_snippet.js and export
-    as a UUDM-compliant GLB with semantic extras injected into glTF nodes.
-    """
-    logger.info("Building UUDM utility geometries...")
-
     scene = trimesh.Scene()
     built = []
 
     for rec in _UTILITY_RECORDS:
         p1, p2 = _build_3d_endpoints(rec)
-        try:
-            mesh = _cylinder_from_endpoints(p1, p2, rec["radius"])
-        except ValueError as e:
-            logger.warning("Skipping %s: %s", rec["id"], e)
-            continue
-
-        # Apply Z-up → Y-up rotation to match glTF coordinate system
-        # (same convention as SyntheticSGUtilities.py)
-        rot = tf.rotation_matrix(-np.pi / 2, [1, 0, 0])
-        mesh.apply_transform(rot)
-
+        mesh = _cylinder_from_endpoints(p1, p2, rec["radius"])
         mesh.visual.face_colors = rec["color"]
         scene.add_geometry(mesh, node_name=rec["id"])
         built.append(rec)
-        logger.info("  ✔ %s  r=%.2f m  depth=[%.1f → %.1f] m",
-                    rec["id"], rec["radius"], rec["depth_start"], rec["depth_end"])
 
     scene.export(output_path)
-    logger.info("Exported %d meshes → %s", len(built), output_path)
-
-    # --- Inject UUDM metadata into glTF node extras ---
     glb = pygltflib.GLTF2().load(output_path)
-    rec_map = {r["id"]: r for r in built}
-    injected = 0
-    for node in glb.nodes:
-        if node.name in rec_map:
-            rec = rec_map[node.name]
+    mesh_nodes = [node for node in glb.nodes if node.mesh is not None]
+
+    for i, node in enumerate(mesh_nodes):
+        if i < len(built):
+            rec = built[i]
+            node.name = rec["id"]
             node.extras = {
                 "utilityId":         rec["id"],
                 "utilityType":       rec["type"],
-                "diameter_m":        rec["radius"] * 2,
+                "diameter_m":        rec["radius"] * 2.0,
                 "depthStart_m":      rec["depth_start"],
                 "depthEnd_m":        rec["depth_end"],
                 "material":          rec["material"],
@@ -239,71 +171,70 @@ def generate_uudm_utilities_glb(output_path: str = "sample_uudm_utilities.glb"):
                 "operator":          rec["operator"],
                 "dataStandard":      "Singapore_UUDM",
             }
-            injected += 1
 
     glb.save(output_path)
-    logger.info("UUDM metadata injected into %d glTF nodes → %s", injected, output_path)
+    logger.info("Exported UUDM database with %d assets → %s", len(built), output_path)
     return output_path
-
-
-# ---------------------------------------------------------------------------
-# GLB generation: LADM parcel
-# ---------------------------------------------------------------------------
 
 def generate_ladm_parcel_glb(output_path: str = "sample_ladm_parcel.glb"):
-    """
-    Build the MarinaBay sample parcel box and export as a GLB with CLIMA-LADM
-    metadata in glTF node extras.
-
-    The parcel matches the Cesium entity in cesium_sandcastle_snippet.js:
-      dimensions: [50 m, 30 m, 25 m]
-      centre: [10 m, 30 m, -12.5 m]  (local CRS)
-    """
-    logger.info("Building LADM parcel geometry...")
-
-    # Box parcel — watertight by construction
     parcel = trimesh.creation.box(extents=_PARCEL_EXTENTS)
+    parcel.apply_translation(_PARCEL_CENTRE)
+    parcel.visual.face_colors = [255, 0, 255, 60]  # Magenta tint
 
-    # Apply Z-up → Y-up rotation to match glTF convention
-    rot = tf.rotation_matrix(-np.pi / 2, [1, 0, 0])
-    parcel.apply_transform(rot)
-
-    # Translate to parcel centre (in glTF Y-up space the Z-up centre becomes [x, z, -y])
-    # Original centre in Z-up: [10, 30, -12.5]  → Y-up: [10, -12.5, -30]
-    # Note: SpatialClaimCalc operates in Z-up; the GLB loader (trimesh) transparently
-    # handles the Y-up→Z-up conversion when loading, so we store in Y-up here.
-    centre_yup = np.array([_PARCEL_CENTRE[0], _PARCEL_CENTRE[2], -_PARCEL_CENTRE[1]])
-    parcel.apply_translation(centre_yup)
-
-    parcel.visual.face_colors = [0, 255, 255, 60]  # Transparent cyan
-
-    scene = trimesh.Scene()
-    scene.add_geometry(parcel, node_name="MarinaBay_Sample_Parcel")
-
+    scene = trimesh.Scene([parcel])
     scene.export(output_path)
-    logger.info("Exported parcel mesh → %s", output_path)
 
-    # --- Inject CLIMA-LADM metadata into glTF node extras ---
     glb = pygltflib.GLTF2().load(output_path)
     for node in glb.nodes:
-        if node.name == "MarinaBay_Sample_Parcel":
+        if node.mesh is not None:
+            node.name = "MarinaBay_Commercial_Lot401"
             node.extras = _CLIMA_LADM_EXTRAS
-            logger.info("CLIMA-LADM extras injected into node '%s'", node.name)
-            break
 
     glb.save(output_path)
-    logger.info("LADM parcel GLB saved → %s", output_path)
+    logger.info("Exported realistic LADM parcel (50×25×30 m) → %s", output_path)
     return output_path
 
 
 # ---------------------------------------------------------------------------
-# Preview image: combined geometry
+# Preview image: combined geometry (Publication White Aesthetic)
 # ---------------------------------------------------------------------------
+
+def _make_box_poly(x_range, y_range, z_range, facecolor, edgecolor, alpha=0.92, lw=1.1):
+    """Helper to create a solid architectural 3D box mesh."""
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+    x0, x1 = x_range
+    y0, y1 = y_range
+    z0, z1 = z_range
+    
+    corners = np.array([
+        [x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0],
+        [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]
+    ])
+    
+    faces = [
+        [corners[0], corners[1], corners[2], corners[3]], # bottom
+        [corners[4], corners[5], corners[6], corners[7]], # top
+        [corners[0], corners[1], corners[5], corners[4]], # front
+        [corners[2], corners[3], corners[7], corners[6]], # back
+        [corners[0], corners[3], corners[7], corners[4]], # left
+        [corners[1], corners[2], corners[6], corners[5]], # right
+    ]
+    
+    return Poly3DCollection(
+        faces,
+        facecolor=facecolor,
+        edgecolor=edgecolor,
+        alpha=alpha,
+        linewidth=lw,
+        linestyle="-"
+    )
+
 
 def generate_preview_image(output_path: str = "sample_geometry_preview.png"):
     """
-    Render a combined 3D matplotlib figure showing all six utility pipes
-    (colour-coded by type) and the parcel bounding box (transparent wireframe).
+    Render an elegant, publication-grade 3D visualization showing all utility pipes,
+    the urban cadastral parcel with high-contrast black dashed outline, transparent
+    ground plane, and solid setback skyscraper with a clean legend placed above the diagram.
     """
     try:
         import matplotlib
@@ -311,115 +242,253 @@ def generate_preview_image(output_path: str = "sample_geometry_preview.png"):
         import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D          # noqa: F401
         from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+        from matplotlib.lines import Line2D
+        from matplotlib.patches import Patch
     except ImportError:
         logger.warning("matplotlib not available — skipping preview image.")
         return None
 
-    logger.info("Rendering combined geometry preview...")
+    logger.info("Rendering combined geometry preview (white publication theme)...")
 
-    fig = plt.figure(figsize=(14, 9), facecolor="#0e1117")
-    ax = fig.add_subplot(111, projection="3d")
-    ax.set_facecolor("#0e1117")
+    fig = plt.figure(figsize=(12.0, 8.8), facecolor="#FFFFFF", dpi=300)
+    ax = fig.add_axes([-0.26, 0.02, 1.28, 0.78], projection="3d")
+    ax.set_facecolor("#FFFFFF")
+    ax.computed_zorder = False
 
-    _LABEL_COLORS = {
-        "DISTRICT_COOLING": ("#00C8FF", "District Cooling (DCS-MB-001)"),
-        "MRT_TUNNEL":       ("#DC3232", "MRT Tunnel (MRT-NSL-001)"),
-        "POWER_CABLE":      ("#FFA500", "Power Cable (PWR-22KV-01)"),
-        "TELECOM":          ("#32DC32", "Telecom Fibre (TEL-FIBER-01)"),
-        "WATER_PIPE":       ("#1E64FF", "Water Pipe (WAT-POT-01)"),
-        "SEWER_TUNNEL":     ("#8B4513", "Sewer Tunnel (DTSS-MB-01)"),
+    STYLE_MAP = {
+        "TEL-FIBER-01": {
+            "color": "#059669",      # Emerald Green
+            "name": "Telecom Fibre (TEL-FIBER-01)",
+            "meta": "Ø0.20 m · Depth -2.0 m · Singtel",
+            "lw": 2.4,
+        },
+        "PWR-22KV-01": {
+            "color": "#854D0E",      # Deep Warm Bronze Brown
+            "name": "Power Cable 22kV (PWR-22KV-01)",
+            "meta": "Ø0.30 m · Depth -2.5 m · SP PowerGrid",
+            "lw": 2.8,
+        },
+        "WAT-POT-01": {
+            "color": "#2563EB",      # Cobalt Blue
+            "name": "Potable Water Pipe (WAT-POT-01)",
+            "meta": "Ø0.60 m · Depth -3.5 m · PUB",
+            "lw": 3.4,
+        },
+        "DCS-MB-001": {
+            "color": "#0891B2",      # Deep Teal / Cyan
+            "name": "District Cooling Main (DCS-MB-001)",
+            "meta": "Ø1.60 m · Depth -6.0 m · SP Group",
+            "lw": 4.6,
+        },
+        "MRT-NSL-001": {
+            "color": "#DC2626",      # Bright Crimson Transit Red
+            "name": "MRT Bored Tunnel (MRT-NSL-001)",
+            "meta": "Ø6.00 m · Depth -22.5 m · SMRT / LTA",
+            "lw": 6.8,
+        },
+        "DTSS-MB-01": {
+            "color": "#475569",      # Slate Graphite
+            "name": "Deep Tunnel Sewer (DTSS-MB-01)",
+            "meta": "Ø3.00 m · Depth -41.0 m · PUB",
+            "lw": 5.0,
+        },
     }
 
-    # --- Draw each utility as a thick line segment ---
-    for rec in _UTILITY_RECORDS:
-        p1, p2 = _build_3d_endpoints(rec)
-        color, label = _LABEL_COLORS.get(rec["type"], ("#AAAAAA", rec["id"]))
-        # Scale visual width by radius for readability
-        lw = max(1.5, rec["radius"] * 3)
-        ax.plot(
-            [p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]],
-            color=color, linewidth=lw, label=label, solid_capstyle="round",
-        )
+    # 1. Urban Ground Plane (Z = 0.0) — Translucent architectural streetscape
+    ground_poly = Poly3DCollection(
+        [np.array([[-15, -30, 0], [160, -30, 0], [160, 30, 0], [-15, 30, 0]])],
+        facecolor="#F1F5F9",
+        edgecolor="#CBD5E1",
+        alpha=0.18,
+        linewidth=0.8,
+        linestyle="--",
+    )
+    ground_poly.set_zorder(1)
+    ax.add_collection3d(ground_poly)
 
-    # --- Draw parcel as a wireframe box ---
+    road_strip = Poly3DCollection(
+        [np.array([[-15, -4, 0], [160, -4, 0], [160, 4, 0], [-15, 4, 0]])],
+        facecolor="#E2E8F0",
+        edgecolor="#94A3B8",
+        alpha=0.20,
+        linewidth=0.6,
+    )
+    road_strip.set_zorder(2)
+    ax.add_collection3d(road_strip)
+
+    # 2. Simplified Solid Building — Set back to rear of Lot 401 (Y in [3.5, 11.5] m)
+    tower = _make_box_poly(
+        x_range=(28.0, 62.0),
+        y_range=(3.5, 11.5),
+        z_range=(0.0, 46.0),
+        facecolor="#E2E8F0",
+        edgecolor="#475569",
+        alpha=0.92,
+        lw=1.1
+    )
+    tower.set_zorder(5)
+    ax.add_collection3d(tower)
+
+    # 3. Subsurface Cadastral Parcel Cage (Z: -30 to 0 m)
     cx, cy, cz = _PARCEL_CENTRE
     dx, dy, dz = _PARCEL_EXTENTS / 2.0
 
-    # 8 corners
     corners = np.array([
-        [cx - dx, cy - dy, cz - dz],
-        [cx + dx, cy - dy, cz - dz],
-        [cx + dx, cy + dy, cz - dz],
-        [cx - dx, cy + dy, cz - dz],
-        [cx - dx, cy - dy, cz + dz],
-        [cx + dx, cy - dy, cz + dz],
-        [cx + dx, cy + dy, cz + dz],
-        [cx - dx, cy + dy, cz + dz],
+        [cx - dx, cy - dy, cz - dz], # 0: bottom front-left
+        [cx + dx, cy - dy, cz - dz], # 1: bottom front-right
+        [cx + dx, cy + dy, cz - dz], # 2: bottom back-right
+        [cx - dx, cy + dy, cz - dz], # 3: bottom back-left
+        [cx - dx, cy - dy, cz + dz], # 4: top front-left
+        [cx + dx, cy - dy, cz + dz], # 5: top front-right
+        [cx + dx, cy + dy, cz + dz], # 6: top back-right
+        [cx - dx, cy + dy, cz + dz], # 7: top back-left
     ])
 
-    # 6 faces (indices into corners)
-    faces = [
-        [corners[0], corners[1], corners[2], corners[3]],  # bottom
-        [corners[4], corners[5], corners[6], corners[7]],  # top
-        [corners[0], corners[1], corners[5], corners[4]],  # front
-        [corners[2], corners[3], corners[7], corners[6]],  # back
-        [corners[0], corners[3], corners[7], corners[4]],  # left
-        [corners[1], corners[2], corners[6], corners[5]],  # right
+    box_faces = [
+        [corners[0], corners[1], corners[2], corners[3]], # bottom
+        [corners[4], corners[5], corners[6], corners[7]], # top
+        [corners[0], corners[1], corners[5], corners[4]], # front
+        [corners[2], corners[3], corners[7], corners[6]], # back
+        [corners[0], corners[3], corners[7], corners[4]], # left
+        [corners[1], corners[2], corners[6], corners[5]], # right
     ]
 
     parcel_poly = Poly3DCollection(
-        faces,
-        alpha=0.08,
-        facecolor="#00FFFF",
-        edgecolor="#00FFFF",
-        linewidth=0.8,
-        label="LADM Parcel (50×30×25 m)",
+        box_faces,
+        alpha=0.04,
+        facecolor="#475569",
+        edgecolor="none",
     )
+    parcel_poly.set_zorder(4)
     ax.add_collection3d(parcel_poly)
 
-    # Axes styling
+    for z_div in [-1.5, -3.0, -7.0]:
+        quad = np.array([
+            [cx - dx, cy - dy, z_div],
+            [cx + dx, cy - dy, z_div],
+            [cx + dx, cy + dy, z_div],
+            [cx - dx, cy + dy, z_div],
+        ])
+        strata_poly = Poly3DCollection([quad], alpha=0.05, facecolor="#94A3B8", edgecolor="#94A3B8", linewidth=0.7, linestyle=":")
+        strata_poly.set_zorder(3)
+        ax.add_collection3d(strata_poly)
+
+    # 4. Draw Utilities (drawn with zorder 10 to 12)
+    p_len, p_wid, p_hgt = _PARCEL_EXTENTS
+    p_vol = p_len * p_wid * p_hgt
+    pid = _CLIMA_LADM_EXTRAS.get("parcelId", "Lot401")
+
+    legend_elements = [
+        Line2D([0], [0], color="#000000", linestyle="--", linewidth=2.4,
+               label=f"LADM Cadastral Lot 401: {p_len:.0f}×{p_wid:.0f}×{p_hgt:.0f} m ({p_vol:,.0f} m³)"),
+        Patch(facecolor="#E2E8F0", edgecolor="#475569", linewidth=1.2,
+              label="Superstructure: Commercial Tower (Z: 0 to +46 m)"),
+        Line2D([0], [0], color=STYLE_MAP["TEL-FIBER-01"]["color"], linewidth=3.2,
+               label=f"{STYLE_MAP['TEL-FIBER-01']['name']} [{STYLE_MAP['TEL-FIBER-01']['meta']}]"),
+        Line2D([0], [0], color=STYLE_MAP["PWR-22KV-01"]["color"], linewidth=3.2,
+               label=f"{STYLE_MAP['PWR-22KV-01']['name']} [{STYLE_MAP['PWR-22KV-01']['meta']}]"),
+        Line2D([0], [0], color=STYLE_MAP["WAT-POT-01"]["color"], linewidth=3.2,
+               label=f"{STYLE_MAP['WAT-POT-01']['name']} [{STYLE_MAP['WAT-POT-01']['meta']}]"),
+        Line2D([0], [0], color=STYLE_MAP["DCS-MB-001"]["color"], linewidth=3.2,
+               label=f"{STYLE_MAP['DCS-MB-001']['name']} [{STYLE_MAP['DCS-MB-001']['meta']}]"),
+        Line2D([0], [0], color=STYLE_MAP["MRT-NSL-001"]["color"], linewidth=3.2,
+               label=f"{STYLE_MAP['MRT-NSL-001']['name']} [{STYLE_MAP['MRT-NSL-001']['meta']}]"),
+        Line2D([0], [0], color=STYLE_MAP["DTSS-MB-01"]["color"], linewidth=3.2,
+               label=f"{STYLE_MAP['DTSS-MB-01']['name']} [{STYLE_MAP['DTSS-MB-01']['meta']}]"),
+    ]
+
+    for rec in _UTILITY_RECORDS:
+        p1, p2 = _build_3d_endpoints(rec)
+        uid = rec["id"]
+        style = STYLE_MAP.get(uid, {"color": "#6B7280", "name": uid, "meta": "", "lw": 2.5})
+        color = style["color"]
+
+        try:
+            cyl_mesh = _cylinder_from_endpoints(p1, p2, rec["radius"], sections=20)
+            if len(cyl_mesh.faces) > 0:
+                stride = max(1, len(cyl_mesh.faces) // 600)
+                sub_faces = cyl_mesh.faces[::stride]
+                poly = Poly3DCollection(cyl_mesh.vertices[sub_faces], alpha=0.75, facecolor=color, edgecolor="none")
+                poly.set_zorder(10)
+                ax.add_collection3d(poly)
+        except Exception:
+            pass
+
+        ax.plot(
+            [p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]],
+            color=color, linewidth=style["lw"], solid_capstyle="round",
+            zorder=12,
+        )
+
+    # 5. Parcel Box 12 Edges — DRAWN LAST WITH zorder=100 SO DASHED LINES GO OVER UTILITIES
+    box_edges = [
+        # Bottom ring
+        (corners[0], corners[1]), (corners[1], corners[2]), (corners[2], corners[3]), (corners[3], corners[0]),
+        # Top ring
+        (corners[4], corners[5]), (corners[5], corners[6]), (corners[6], corners[7]), (corners[7], corners[4]),
+        # 4 Vertical pillars
+        (corners[0], corners[4]), (corners[1], corners[5]), (corners[2], corners[6]), (corners[3], corners[7]),
+    ]
+
+    for p_start, p_end in box_edges:
+        ax.plot(
+            [p_start[0], p_end[0]],
+            [p_start[1], p_end[1]],
+            [p_start[2], p_end[2]],
+            color="#000000",
+            linestyle="--",
+            linewidth=2.4,
+            dash_capstyle="round",
+            zorder=100
+        )
+
+    # 6. Minimalist Axes & Spines
     for spine in [ax.xaxis, ax.yaxis, ax.zaxis]:
         spine.pane.fill = False
-        spine.pane.set_edgecolor("#333344")
+        spine.pane.set_edgecolor("#E2E8F0")
 
-    ax.tick_params(colors="#8888AA", labelsize=7)
-    ax.set_xlabel("X  (m)", color="#8888AA", labelpad=6, fontsize=8)
-    ax.set_ylabel("Y  (m)", color="#8888AA", labelpad=6, fontsize=8)
-    ax.set_zlabel("Z depth (m)", color="#8888AA", labelpad=6, fontsize=8)
+    ax.tick_params(colors="#64748B", labelsize=8, pad=3)
+    ax.set_xlabel("X (East) [m]", color="#334155", labelpad=8, fontsize=9, fontweight="500")
+    ax.set_ylabel("Y (North) [m]", color="#334155", labelpad=8, fontsize=9, fontweight="500")
+    ax.set_zlabel("Z (Elevation / Depth) [m]", color="#334155", labelpad=8, fontsize=9, fontweight="500")
 
-    # Set view limits
-    ax.set_xlim(-60, 210)
-    ax.set_ylim(-60, 160)
-    ax.set_zlim(-50, 5)
+    ax.set_box_aspect((3.6, 1.8, 2.0))
+    ax.set_xlim(-15, 165)
+    ax.set_ylim(-35, 35)
+    ax.set_zlim(-46, 62)
 
-    ax.view_init(elev=25, azim=-50)
+    ax.view_init(elev=18, azim=-42)
+    ax.grid(True, linestyle=":", color="#E2E8F0", alpha=0.9)
 
-    # Title
+    # 7. Header
     fig.text(
-        0.5, 0.96,
-        "Marina Bay Synthetic Underground Network + LADM Parcel",
-        ha="center", va="top", fontsize=13, color="#E0E0FF",
-        fontweight="bold",
+        0.04, 0.965,
+        "3D Cadastral Parcel, Urban Superstructure & Subsurface Utility Network",
+        fontsize=13.5, color="#0F172A", fontweight="bold",
     )
     fig.text(
-        0.5, 0.925,
-        "UUDM Utilities (ISO 19152-2:2025)  ·  ExtSpatialClaim Parcel (ISO 19152-5:2024)",
-        ha="center", va="top", fontsize=9, color="#8888AA",
+        0.04, 0.940,
+        "Singapore CLIMA-LADM Profile (ISO 19152-5:2024) · Singapore UUDM Infrastructure Model (ISO 19152-2:2025)",
+        fontsize=8.8, color="#64748B",
     )
 
-    # Legend
-    legend = ax.legend(
+    # 8. Clean Legend placed above the diagram on the left (UNCHANGED POSITION)
+    fig.legend(
+        handles=legend_elements,
         loc="upper left",
-        fontsize=7.5,
-        framealpha=0.25,
-        facecolor="#1a1d2e",
-        edgecolor="#555577",
-        labelcolor="#DDDDFF",
-        bbox_to_anchor=(0.01, 0.98),
+        bbox_to_anchor=(0.04, 0.925),
+        ncol=2,
+        fontsize=7.4,
+        frameon=True,
+        facecolor="#FFFFFF",
+        edgecolor="#CBD5E1",
+        framealpha=0.98,
+        columnspacing=1.8,
+        labelspacing=0.38,
+        borderpad=0.55,
     )
 
-    plt.tight_layout(rect=[0, 0, 1, 0.92])
-    fig.savefig(output_path, dpi=180, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(output_path, dpi=300, facecolor="#FFFFFF")
     plt.close(fig)
     logger.info("Preview image saved → %s", output_path)
     return output_path
@@ -430,22 +499,12 @@ def generate_preview_image(output_path: str = "sample_geometry_preview.png"):
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    logger.info("=== Sample Asset Generator ===")
+    generate_uudm_utilities_glb("sample_uudm_utilities.glb")
+    generate_ladm_parcel_glb("sample_ladm_parcel.glb")
+    preview = generate_preview_image("sample_geometry_preview.png")
 
-    util_path   = generate_uudm_utilities_glb("sample_uudm_utilities.glb")
-    parcel_path = generate_ladm_parcel_glb("sample_ladm_parcel.glb")
-    preview     = generate_preview_image("sample_geometry_preview.png")
-
-    logger.info("")
-    logger.info("Generated assets:")
-    logger.info("  %s  — UUDM utility database (6 pipes)", util_path)
-    logger.info("  %s     — LADM parcel with CLIMA-LADM extras", parcel_path)
+    print("\nAssets generated.")
     if preview:
-        logger.info("  %s  — combined geometry preview", preview)
-
-    logger.info("")
-    logger.info("Usage:")
-    logger.info("  python SpatialClaimCalc.py")
-    logger.info("  python SpatialClaimCalc.py --parcel sample_ladm_parcel.glb")
-    logger.info("  python SpatialClaimCalc.py --parcel my_custom_parcel.obj \\")
-    logger.info("                             --utilities sample_uudm_utilities.glb")
+        print(f"Preview image: {preview}")
+    print("Run command:")
+    print("python SpatialClaimCalc.py -p sample_ladm_parcel.glb -u sample_uudm_utilities.glb -r 0.25")

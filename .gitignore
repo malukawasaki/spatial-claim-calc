@@ -30,6 +30,15 @@ test_gltf_extras.py
 test_names.py
 code_review_analysis.md
 parcel_geometry.png
+render_uudm_preview.py
+test_render_visuals.py
+scenario1.png
+scenario2.png
 
 # Legacy utility GLB (superseded by sample_uudm_utilities.glb)
 marina_bay_synthetic_utilities.glb
+
+# Congestion simulator (supplementary local tooling, not part of published pipeline)
+congestionSimulator.py
+congestionSim.py
+SyntheticSGUtilities.py

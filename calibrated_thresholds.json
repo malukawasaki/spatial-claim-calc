@@ -1,0 +1,257 @@
+{
+  "calibration_method": "Monte Carlo Constructability Insertion Probability",
+  "p_low_medium": 0.8,
+  "p_medium_high": 0.2,
+  "resolution_m": 0.5,
+  "n_runs": 5,
+  "max_insertions": 200,
+  "n_probes": 10,
+  "corridor_length_m": 40.0,
+  "corridor_width_m": 10.0,
+  "elapsed_seconds": 25.2,
+  "strata": {
+    "Shallow_Utilities": {
+      "stratum": "Shallow_Utilities",
+      "depth_range_m": [
+        -3.0,
+        -1.5
+      ],
+      "candidate_diameter_m": 0.3,
+      "candidate_clearance_m": 0.3,
+      "thresholds": {
+        "low_medium": 0.1442,
+        "medium_high": 0.2319
+      },
+      "statistics": {
+        "low_medium": {
+          "mean": 0.1442,
+          "std": 0.0747,
+          "cv_pct": 51.77,
+          "median": 0.1246,
+          "q25": 0.0906,
+          "q75": 0.2183,
+          "iqr": 0.1277,
+          "ci95_low": 0.0515,
+          "ci95_high": 0.2369,
+          "n_triggered": 5
+        },
+        "medium_high": {
+          "mean": 0.2319,
+          "std": 0.0808,
+          "cv_pct": 34.84,
+          "median": 0.2406,
+          "q25": 0.1925,
+          "q75": 0.2746,
+          "iqr": 0.0821,
+          "ci95_low": 0.1316,
+          "ci95_high": 0.3322,
+          "n_triggered": 5
+        }
+      },
+      "per_run_results": [
+        {
+          "seed": 0,
+          "low_medium_sui": 0.090625,
+          "medium_high_sui": 0.11958333333333333,
+          "final_sui": 0.11958333333333333,
+          "insertions": 2,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 1,
+          "low_medium_sui": 0.06145833333333333,
+          "medium_high_sui": 0.1925,
+          "final_sui": 0.1925,
+          "insertions": 2,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 2,
+          "low_medium_sui": 0.21833333333333332,
+          "medium_high_sui": 0.27458333333333335,
+          "final_sui": 0.32354166666666667,
+          "insertions": 5,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 3,
+          "low_medium_sui": 0.22604166666666667,
+          "medium_high_sui": 0.33208333333333334,
+          "final_sui": 0.33208333333333334,
+          "insertions": 4,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 4,
+          "low_medium_sui": 0.12458333333333334,
+          "medium_high_sui": 0.240625,
+          "final_sui": 0.240625,
+          "insertions": 4,
+          "termination": "SEVERED"
+        }
+      ]
+    },
+    "Intermediate_Utilities": {
+      "stratum": "Intermediate_Utilities",
+      "depth_range_m": [
+        -7.0,
+        -3.0
+      ],
+      "candidate_diameter_m": 1.0,
+      "candidate_clearance_m": 0.5,
+      "thresholds": {
+        "low_medium": 0.136,
+        "medium_high": 0.2765
+      },
+      "statistics": {
+        "low_medium": {
+          "mean": 0.136,
+          "std": 0.0707,
+          "cv_pct": 52.01,
+          "median": 0.1277,
+          "q25": 0.0951,
+          "q75": 0.1497,
+          "iqr": 0.0546,
+          "ci95_low": 0.0482,
+          "ci95_high": 0.2238,
+          "n_triggered": 5
+        },
+        "medium_high": {
+          "mean": 0.2765,
+          "std": 0.0906,
+          "cv_pct": 32.75,
+          "median": 0.2472,
+          "q25": 0.2025,
+          "q75": 0.3356,
+          "iqr": 0.1331,
+          "ci95_low": 0.1641,
+          "ci95_high": 0.389,
+          "n_triggered": 5
+        }
+      },
+      "per_run_results": [
+        {
+          "seed": 0,
+          "low_medium_sui": 0.1496875,
+          "medium_high_sui": 0.19375,
+          "final_sui": 0.19375,
+          "insertions": 2,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 1,
+          "low_medium_sui": 0.2471875,
+          "medium_high_sui": 0.2471875,
+          "final_sui": 0.2471875,
+          "insertions": 2,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 2,
+          "low_medium_sui": 0.095078125,
+          "medium_high_sui": 0.403515625,
+          "final_sui": 0.403515625,
+          "insertions": 3,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 3,
+          "low_medium_sui": 0.060390625,
+          "medium_high_sui": 0.2025,
+          "final_sui": 0.2025,
+          "insertions": 2,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 4,
+          "low_medium_sui": 0.12765625,
+          "medium_high_sui": 0.335625,
+          "final_sui": 0.335625,
+          "insertions": 4,
+          "termination": "SEVERED"
+        }
+      ]
+    },
+    "Deep_Infrastructure": {
+      "stratum": "Deep_Infrastructure",
+      "depth_range_m": [
+        -30.0,
+        -7.0
+      ],
+      "candidate_diameter_m": 6.5,
+      "candidate_clearance_m": 6.0,
+      "thresholds": {
+        "low_medium": 0.3344,
+        "medium_high": 0.3344
+      },
+      "statistics": {
+        "low_medium": {
+          "mean": 0.3344,
+          "std": 0.0856,
+          "cv_pct": 25.6,
+          "median": 0.3595,
+          "q25": 0.2523,
+          "q75": 0.4036,
+          "iqr": 0.1513,
+          "ci95_low": 0.2281,
+          "ci95_high": 0.4407,
+          "n_triggered": 5
+        },
+        "medium_high": {
+          "mean": 0.3344,
+          "std": 0.0856,
+          "cv_pct": 25.6,
+          "median": 0.3595,
+          "q25": 0.2523,
+          "q75": 0.4036,
+          "iqr": 0.1513,
+          "ci95_low": 0.2281,
+          "ci95_high": 0.4407,
+          "n_triggered": 5
+        }
+      },
+      "per_run_results": [
+        {
+          "seed": 0,
+          "low_medium_sui": 0.4206521739130435,
+          "medium_high_sui": 0.4206521739130435,
+          "final_sui": 0.4206521739130435,
+          "insertions": 1,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 1,
+          "low_medium_sui": 0.4035733695652174,
+          "medium_high_sui": 0.4035733695652174,
+          "final_sui": 0.4035733695652174,
+          "insertions": 1,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 2,
+          "low_medium_sui": 0.25226902173913046,
+          "medium_high_sui": 0.25226902173913046,
+          "final_sui": 0.25226902173913046,
+          "insertions": 1,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 3,
+          "low_medium_sui": 0.23588315217391304,
+          "medium_high_sui": 0.23588315217391304,
+          "final_sui": 0.23588315217391304,
+          "insertions": 1,
+          "termination": "SEVERED"
+        },
+        {
+          "seed": 4,
+          "low_medium_sui": 0.35952445652173914,
+          "medium_high_sui": 0.35952445652173914,
+          "final_sui": 0.35952445652173914,
+          "insertions": 1,
+          "termination": "SEVERED"
+        }
+      ]
+    }
+  }
+}

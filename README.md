@@ -5,96 +5,158 @@ First introduced in 2024, the Land Administration Domain Model (LADM) climate ad
 This repository contains the scripts used in the paper:
 **"From Geological Models to 3D Utility Cadastres: Advancing the LADM Climate Adaptation Profile for Spatial Planning"** *(Published in the Land Administration Special Edition of the journal Survey Review, 2026).*
 
-**Paper Authors:** Maria Luisa Tarozzo Kawasaki, Peter van Oosterom, and Rob van der Krogt
+**Paper Authors:** Maria Luisa Tarozzo Kawasaki, Peter van Oosterom, and Rob van der Krogt  
 **Script Author:** Maria Luisa Tarozzo Kawasaki
 
-<img width="1920" height="1080" alt="Screenshot 2026-07-08 at 16 51 49" src="https://github.com/user-attachments/assets/092e9ac0-96bd-434f-beb7-c816d78116d7" />
+![3D Cadastral Parcel, Urban Superstructure & Subsurface Utility Network](sample_geometry_preview.png)
 
 ---
 
 ## Quick Start
 
-**Requirements:** Python 3.9+
+**Requirements:** Python 3.9+ (Python 3.10+ recommended)
 
 ```bash
 # 1. Install dependencies
-pip install -r requirements.txt
+pip install -r requirements.txt matplotlib
 
-# 2. Generate the sample GLB files and preview image
+# 2. Generate the baseline sample GLB assets and preview visualization
 python generate_sample_assets.py
 
 # 3. Run the Spatial Claim Calculator (built-in demonstration scenarios)
 python SpatialClaimCalc.py
 
-# 4. Run with the sample LADM parcel (reads CLIMA-LADM metadata automatically)
+# 4. Run with the sample LADM parcel (auto-reads CLIMA-LADM metadata from glTF extras)
 python SpatialClaimCalc.py --parcel sample_ladm_parcel.glb
 
-# 5. Use your own parcel and/or utility database
+# 5. Run with custom parcel and/or utility database
 python SpatialClaimCalc.py --parcel your_parcel.glb --utilities your_utilities.glb
 
-# 6. Run the congestion simulator (single seed, ~2 min)
-python congestionSimulator.py --seed 42
+# 6. Calibrate empirical congestion thresholds via Monte Carlo constructability insertion
+python calibrateCongestionThresholds.py --runs 5 --resolution 0.5
 
-# 7. Run the full N=30 multi-run simulation for threshold derivation (~60 min)
-python congestionSimulator.py --multi --n-runs 30
+# 7. Generate standardized multi-strata test scenarios (A, B, C)
+python generate_test_scenarios.py
+
+# 8. Render 3D diagnostic figures for all test scenarios
+python plotScenarios.py
+
+# 9. Render high-resolution publication-ready 3D visual on clean white background
+python plot_uudm_ladm_white.py
 ```
 
-### CLI Reference — SpatialClaimCalc.py
+---
 
-| Argument | Default | Description |
+## CLI Reference
+
+### 1. `SpatialClaimCalc.py`
+
+Evaluates 3D spatial congestion by calculating the legal volume occupied by existing utilities (including statutory safety buffers) relative to the 3D volume of the cadastral parcel.
+
+| Argument | Short | Default | Description |
+|---|---|---|---|
+| `--parcel` | `-p` | *(demo mode)* | Path to parcel file (`.glb`, `.obj`, `.stl`). GLB files are auto-inspected for CLIMA-LADM metadata. |
+| `--utilities` | `-u` | `sample_uudm_utilities.glb` | Path to UUDM spatial database (`.glb`). |
+| `--buffer` | `-b` | `1.5` | Default legal safety buffer radius in metres (`LA_LegalSpaceUtilityNetworkElement`). |
+| `--resolution` | `-r` | `0.25` | Voxel resolution in metres. Lower = higher precision; higher = faster execution. |
+| `--sensitivity` | | off | Run resolution sensitivity analysis across 0.10 m, 0.25 m, and 0.50 m. |
+| `--verbose` | `-v` | off | Enable detailed debug logging. |
+
+> **Performance note:** The default 0.25 m resolution delivers high spatial fidelity. For rapid testing or large parcels, use `--resolution 0.5` or `--resolution 1.0`.
+
+### 2. `calibrateCongestionThresholds.py`
+
+Derives statistically validated, depth-stratified Space Utilization Index (SUI) thresholds using Monte Carlo constructability insertion stress-testing in an urban right-of-way corridor sandbox.
+
+| Argument | Short | Default | Description |
+|---|---|---|---|
+| `--runs` | `-n` | `10` | Number of independent Monte Carlo simulation runs (seeds 0 to n-1). |
+| `--resolution` | `-r` | `0.25` | Voxel grid resolution in metres. |
+| `--stratum` | `-s` | `all` | Stratum to calibrate (`shallow`, `intermediate`, `deep`, or `all`). |
+| `--output` | `-o` | `calibrated_thresholds.json` | Path to export calibrated threshold results in JSON. |
+| `--probes` | `-k` | `20` | Candidate utility insertion probes per step to compute $P_{\text{insertion}}$. |
+| `--verbose` | `-v` | off | Display step-by-step insertion logging. |
+
+---
+
+## Congestion Index Thresholds
+
+### 1. Standard Planning-Policy Thresholds
+
+The general Space Utilization Index (SUI) measures the ratio of statutory occupied utility volume to total parcel volume:
+
+$$\text{SUI} = \frac{V_{\text{Occupied Legal Space}}}{V_{\text{Parcel}}} \times 100\%$$
+
+| Congestion Index | SUI Range | Planning & Constructability Interpretation |
 |---|---|---|
-| `-p` / `--parcel` | *(demo mode)* | Path to a parcel file (`.glb`, `.obj`, `.stl`). GLB files are auto-inspected for CLIMA-LADM metadata. |
-| `-u` / `--utilities` | `sample_uudm_utilities.glb` | Path to a UUDM spatial database (GLB). |
-| `-b` / `--buffer` | `1.5` | Legal safety buffer radius in metres (LA_LegalSpaceUtilityNetworkElement). |
-| `-r` / `--resolution` | `0.25` | Voxel resolution in metres. Lower = more accurate but slower. |
-| `--sensitivity` | off | Run resolution sensitivity analysis at 0.10, 0.25, and 0.50 m. |
-| `-v` / `--verbose` | off | Enable DEBUG-level logging. |
+| **Low** | $\text{SUI} < 5\%$ | Minimal infrastructure presence; ample routing capacity with negligible conflict risk. |
+| **Medium** | $5\% \le \text{SUI} < 20\%$ | Moderate occupation; routing possible but requires coordination and offset routing. |
+| **High** | $\text{SUI} \ge 20\%$ | Severe congestion; geometric lock prevents new routing without major deviations or conflict. |
 
-> **Note on performance:** The default resolution of 0.25 m is accurate but slow for large parcels. Use `--resolution 1.0` for quick exploration and `--resolution 0.25` for final results.
+### 2. Empirical Stratified Thresholds (`calibrated_thresholds.json`)
 
-### Running the Tests
+Calibrated via Monte Carlo constructability insertion probability ($P_{\text{insertion}}$), measuring the likelihood that a new standardized utility can traverse an urban utility corridor without conflicting with existing statutory buffers:
+- **Low $\to$ Medium transition:** $P_{\text{insertion}} < 0.80$ (80% insertion success)
+- **Medium $\to$ High transition:** $P_{\text{insertion}} < 0.20$ (geometric locking threshold)
 
-```bash
-pytest test_spatial_claim_calc.py -v
-```
+| Depth Stratum | Depth Range | Candidate Asset | Clearance Buffer | Low $\to$ Medium | Medium $\to$ High |
+|---|---|---|---|---|---|
+| **Shallow Utilities** | $-1.5\text{ m to } -3.0\text{ m}$ | $\varnothing 0.3\text{ m}$ (Telecom / Power) | $0.3\text{ m}$ | $\sim 14.4\%$ | $\sim 23.2\%$ |
+| **Intermediate Utilities** | $-3.0\text{ m to } -7.0\text{ m}$ | $\varnothing 1.0\text{ m}$ (District Cooling / Potable Water) | $0.5\text{ m}$ | $\sim 13.6\%$ | $\sim 27.7\%$ |
+| **Deep Infrastructure** | $-7.0\text{ m to } -30.0\text{ m}$ | $\varnothing 6.5\text{ m}$ (MRT / DTSS Tunnels) | $6.0\text{ m}$ | $\sim 33.4\%$ | $\sim 33.4\%$ |
 
 ---
 
 ## Repository Contents
 
-* **`cesium_sandcastle_snippet.js`** — 3D Visualization Script (JavaScript): Designed to be imported into Cesium Sandcastle, this script creates and visualizes UUDM-standardized 3D utilities, 3D buildings, and underground parcel geometries. Replace `<YOUR ACCESS TOKEN (FROM CESIUM)>` with your own [Cesium Ion token](https://cesium.com/ion/). The script can be adapted to represent other UUDM databases or parcels globally.
-* **`congestionSimulator.py`** — 3D Congestion Simulator (Python): A sophisticated 3D voxel-based pathfinding script that simulates routing new utilities through dense underground networks. By applying real-world engineering constraints—such as orthogonal turn penalties and surface cover depth limits—it calculates precise, empirical Space Utilization Index (SUI) thresholds (e.g., proving that geometric locking creates "High" congestion at just 16.3% SUI).
-* **`SpatialClaimCalc.py`** — Spatial Claim Calculator (Python): A script that evaluates the level of existing spatial congestion within a specific parcel (categorized as High, Medium, or Low). It calculates this by comparing the legal volume occupied by existing utilities against the total 3D volume of the underground parcel.
-* **`generate_sample_assets.py`** — Sample Asset Generator (Python): Generates `sample_uudm_utilities.glb` (6 utility pipes with UUDM metadata) and `sample_ladm_parcel.glb` (a LADM parcel with CLIMA-LADM metadata) from the geometries defined in `cesium_sandcastle_snippet.js`, plus a combined preview image.
-* **`SyntheticSGUtilities.py`** — Synthetic Utility Generator (Python): Generates the Marina Bay synthetic underground network used internally by `congestionSimulator.py`.
-* **`test_spatial_claim_calc.py`** — Unit tests for `SpatialClaimCalc.py`.
-
-### Sample Assets
-
-| File | Description |
-|---|---|
-| `sample_uudm_utilities.glb` | UUDM utility database — 6 pipes (DCS, MRT, PWR, TEL, WAT, DTSS) with Singapore UUDM metadata in glTF extras. |
-| `sample_ladm_parcel.glb` | LADM parcel — 50×30×25 m box with CLIMA-LADM metadata (ISO 19152-5:2024) in glTF extras. |
-| `sample_geometry_preview.png` | Combined 3D preview of the utilities and parcel. |
+* **`SpatialClaimCalc.py`** — 3D Spatial Claim Calculator (Python): Primary analysis engine that calculates volumetric legal space occupation, depth-stratified utilization, and assigns LADM `ExtSpatialClaim` congestion indices.
+* **`calibrateCongestionThresholds.py`** — Empirical Threshold Calibration (Python): Simulates constructability insertion percolation across right-of-way corridor sandboxes to empirically derive Low/Medium/High thresholds per depth layer. Supersedes legacy heuristic simulators (`congestionSimulator.py`, `SyntheticSGUtilities.py`).
+* **`calibrated_thresholds.json`** — Calibrated Threshold Database (JSON): Empirical thresholds, IQR, 95% confidence intervals, and per-run results generated by `calibrateCongestionThresholds.py`.
+* **`generate_sample_assets.py`** — Sample Asset Generator (Python): Builds `sample_uudm_utilities.glb` and `sample_ladm_parcel.glb` with full Singapore UUDM (ISO 19152-2:2025) and CLIMA-LADM (ISO 19152-5:2024) metadata.
+* **`generate_test_scenarios.py`** — Standardized Scenario Generator (Python): Synthesizes targeted test parcels and utility networks for Scenarios A, B, and C with validated glTF node metadata.
+* **`plotScenarios.py`** — Scenario Diagnostic Visualizer (Python): Generates multi-layer 3D plots showing shallow, intermediate, and deep layer congestion metrics.
+* **`plot_uudm_ladm_white.py`** — Publication Visualizer (Python): Renders clean, high-resolution figures on a white background for publication and reports (`sample_uudm_ladm_white.png`).
+* **`cesium_sandcastle_snippet.js`** — 3D WebGL Visualization (JavaScript): Cesium Sandcastle script for interactive 3D web rendering of UUDM utilities, buildings, and underground cadastral boundaries.
+* **`test_spatial_claim_calc.py`** — Unit Test Suite (Python/pytest): Automated test coverage for volume calculations, schema compliance, buffer dilation, and boundary cases.
 
 ---
 
-### Example Scenarios
+## Sample Assets & Standardized Testbeds
 
-**Scenario 1: Shared Utility Trench (High Congestion)**
-In this scenario, a single tight bounding box is generated around a bundle of 4 distinct shallow utility pipes (Cooling, Power, Telecom, and Water).
+### Baseline Sample Assets
 
-<img width="1000" height="600" alt="scenario1" src="https://github.com/user-attachments/assets/785e11cc-a84c-4799-842e-513e9348fcf0" />
+| Asset File | Format | Description |
+|---|---|---|
+| **`sample_uudm_utilities.glb`** | glTF/GLB | 6 standardized underground utility assets (DCS, MRT, PWR, TEL, WAT, DTSS) with Singapore UUDM metadata in node extras. |
+| **`sample_ladm_parcel.glb`** | glTF/GLB | $50 \times 30 \times 25\text{ m}$ 3D cadastral parcel with ISO 19152-5:2024 CLIMA-LADM attributes (`parcelId`, `climaAdaptation_profile`, `referenceFrame`, `verticalDatum`). |
+| **`sample_geometry_preview.png`** | PNG | Overview 3D visualization showing utility network, parcel boundary, and architectural superstructure. |
+| **`sample_uudm_ladm_white.png`** | PNG | High-contrast publication-grade 3D visualization on white background. |
 
-- Calculated SUI: 68.91%
-- Status: HIGH Congestion
-- Analysis: Because the bounding box hugs these 4 parallel pipes tightly with only a 1.5m buffer, the vast majority of the volume inside this box is consumed by the statutory legal space of the pipes. This is highly congested space where routing a new pipe would be nearly impossible without a path deviation >20%.
+### Standardized Evaluation Scenarios
 
-**Scenario 2: Deep Infrastructure Easement (Low Congestion)**
-In this scenario, a bounding box is generated solely for the massive MRT Tunnel running deep underground.
+Targeted test scenarios generated by `generate_test_scenarios.py` and visualized with `plotScenarios.py`:
 
-<img width="1000" height="600" alt="scenario2" src="https://github.com/user-attachments/assets/4e9f245c-712a-4fd9-b232-df3e948e8f70" />
+| Scenario | Parcel Asset | Utilities Asset | Diagnostic Figure | Description |
+|---|---|---|---|---|
+| **Scenario A** | `parcel_scenario_A.glb` | `utils_scenario_A.glb` | `Scenario_A_Shallow_High.png` | **Shallow Trench Congestion**: Dense bundle of shallow cables & pipes (Telecom, Power, Water). High shallow SUI, low deep SUI. |
+| **Scenario B** | `parcel_scenario_B.glb` | `utils_scenario_B.glb` | `Scenario_B_Intermediate_High.png` | **Intermediate Layer Congestion**: Major District Cooling supply mains causing localized intermediate-layer congestion. |
+| **Scenario C** | `parcel_scenario_C.glb` | `utils_scenario_C.glb` | `Scenario_C_Deep_High.png` | **Deep Infrastructure Easement**: MRT transit tunnels and deep sewer tunnels with extensive statutory protection zones. |
+| **Scenario D** | Baseline Parcel | Baseline Utilities | `Scenario_D_Balanced_Medium.png` | **Multi-Strata Balanced Network**: Distributed municipal utility arrangement across shallow, intermediate, and deep zones. |
 
-- Calculated SUI: 4.48%
-- Status: LOW Congestion
-- Analysis: The MRT tunnel is huge, but it is the only object in this generated parcel. The 1.5m legal space buffer around the cylinder leaves a lot of empty corners within the rectangular bounding box, resulting in a low SUI. There is no other intersecting utility preventing routing parallel to this tunnel.
+---
+
+## Running the Unit Tests
+
+```bash
+pytest test_spatial_claim_calc.py -v
+```
+
+All 8 core test suites validate:
+- Zero-congestion calculation on empty parcels
+- Geometric volume convergence against analytical cylinders
+- High-congestion volumetric saturation
+- LADM `ExtSpatialClaim` JSON output schema compliance
+- Consistency between SUI ratio and percentage representations
+- Validation and error handling for invalid/empty parcel meshes
+- Voxel resolution sensitivity and stability
+- Strict upper-bound constraint ($V_{\text{occupied}} \le V_{\text{parcel}}$)
