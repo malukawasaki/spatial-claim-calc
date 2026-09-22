@@ -5,10 +5,7 @@ First introduced in 2024, the Land Administration Domain Model (LADM) climate ad
 This repository contains the scripts used in the paper:
 **"From Geological Models to 3D Utility Cadastres: Advancing the LADM Climate Adaptation Profile for Spatial Planning"** *(Published in the Land Administration Special Edition of the journal Survey Review, 2026).*
 
-**Paper Authors:** Maria Luisa Tarozzo Kawasaki, Peter van Oosterom, and Rob van der Krogt  
-**Script Author:** Maria Luisa Tarozzo Kawasaki
-
-![3D Cadastral Parcel, Urban Superstructure & Subsurface Utility Network](sample_geometry_preview.png)
+**Authors:** Maria Luisa Tarozzo Kawasaki, Peter van Oosterom, and Rob van der Krogt  
 
 ---
 
