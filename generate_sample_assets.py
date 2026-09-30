@@ -15,6 +15,7 @@ Usage:
 """
 
 import logging
+import os
 from datetime import date
 import numpy as np
 import trimesh
@@ -140,7 +141,8 @@ _CLIMA_LADM_EXTRAS = {
     "climaAdaptation_riskLevel":      "TBD",
 }
 
-def generate_uudm_utilities_glb(output_path: str = "sample_uudm_utilities.glb"):
+def generate_uudm_utilities_glb(output_path: str = "data-synth/sample_uudm_utilities.glb"):
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     scene = trimesh.Scene()
     built = []
 
@@ -176,7 +178,8 @@ def generate_uudm_utilities_glb(output_path: str = "sample_uudm_utilities.glb"):
     logger.info("Exported UUDM database with %d assets → %s", len(built), output_path)
     return output_path
 
-def generate_ladm_parcel_glb(output_path: str = "sample_ladm_parcel.glb"):
+def generate_ladm_parcel_glb(output_path: str = "data-synth/sample_ladm_parcel.glb"):
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     parcel = trimesh.creation.box(extents=_PARCEL_EXTENTS)
     parcel.apply_translation(_PARCEL_CENTRE)
     parcel.visual.face_colors = [255, 0, 255, 60]  # Magenta tint
@@ -230,7 +233,7 @@ def _make_box_poly(x_range, y_range, z_range, facecolor, edgecolor, alpha=0.92, 
     )
 
 
-def generate_preview_image(output_path: str = "sample_geometry_preview.png"):
+def generate_preview_image(output_path: str = "figure/sample_geometry_preview.png"):
     """
     Render an elegant, publication-grade 3D visualization showing all utility pipes,
     the urban cadastral parcel with high-contrast black dashed outline, transparent
@@ -240,6 +243,7 @@ def generate_preview_image(output_path: str = "sample_geometry_preview.png"):
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
+        os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
         from mpl_toolkits.mplot3d import Axes3D          # noqa: F401
         from mpl_toolkits.mplot3d.art3d import Poly3DCollection
         from matplotlib.lines import Line2D
@@ -499,12 +503,14 @@ def generate_preview_image(output_path: str = "sample_geometry_preview.png"):
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    generate_uudm_utilities_glb("sample_uudm_utilities.glb")
-    generate_ladm_parcel_glb("sample_ladm_parcel.glb")
-    preview = generate_preview_image("sample_geometry_preview.png")
+    os.makedirs("data-synth", exist_ok=True)
+    os.makedirs("figure", exist_ok=True)
+    generate_uudm_utilities_glb("data-synth/sample_uudm_utilities.glb")
+    generate_ladm_parcel_glb("data-synth/sample_ladm_parcel.glb")
+    preview = generate_preview_image("figure/sample_geometry_preview.png")
 
     print("\nAssets generated.")
     if preview:
         print(f"Preview image: {preview}")
     print("Run command:")
-    print("python SpatialClaimCalc.py -p sample_ladm_parcel.glb -u sample_uudm_utilities.glb -r 0.25")
+    print("python SpatialClaimCalc.py -p data-synth/sample_ladm_parcel.glb -u data-synth/sample_uudm_utilities.glb -r 0.25")

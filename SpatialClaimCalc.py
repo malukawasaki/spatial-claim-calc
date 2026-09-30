@@ -17,13 +17,14 @@ References
 - Guo et al. (2020), Automation in Construction, 119, 103309
 """
 
+import argparse
 import json
 import logging
+import os
 import sys
 
 import numpy as np
 import trimesh
-import argparse
 
 # ---------------------------------------------------------------------------
 # Logging configuration
@@ -366,6 +367,11 @@ def load_uudm_glb(filepath: str) -> list:
     list of dict
         Each dict contains 'mesh' (trimesh.Trimesh) and 'uudm' (metadata).
     """
+    if not os.path.exists(filepath):
+        alt_path = os.path.join("data-synth", filepath)
+        if os.path.exists(alt_path):
+            filepath = alt_path
+
     logger.info("Loading UUDM spatial database: %s", filepath)
 
     # Load 3D geometry via trimesh
@@ -433,6 +439,11 @@ def load_ladm_parcel_glb(filepath: str) -> tuple:
     ValueError
         If the GLB contains no geometry.
     """
+    if not os.path.exists(filepath):
+        alt_path = os.path.join("data-synth", filepath)
+        if os.path.exists(alt_path):
+            filepath = alt_path
+
     logger.info("Loading LADM parcel from GLB: %s", filepath)
 
     # --- 1. Load geometry ---
@@ -546,9 +557,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-u", "--utilities",
-        default="sample_uudm_utilities.glb",
+        default="data-synth/sample_uudm_utilities.glb",
         help="Path to the UUDM Spatial Database (GLB file). "
-             "Default: sample_uudm_utilities.glb (generate with generate_sample_assets.py)",
+             "Default: data-synth/sample_uudm_utilities.glb (generate with generate_sample_assets.py)",
     )
     parser.add_argument(
         "-b", "--buffer",
@@ -601,6 +612,11 @@ if __name__ == "__main__":
         tuple of (trimesh.Trimesh, dict)
             Parcel mesh and LADM metadata (may be empty for non-GLB formats).
         """
+        if not os.path.exists(path):
+            alt_path = os.path.join("data-synth", path)
+            if os.path.exists(alt_path):
+                path = alt_path
+
         ext = path.lower().rsplit(".", 1)[-1]
         if ext in ("glb", "gltf"):
             return load_ladm_parcel_glb(path)

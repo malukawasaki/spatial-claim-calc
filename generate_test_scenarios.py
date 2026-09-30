@@ -28,6 +28,7 @@ def create_pipe_mesh(p1, p2, radius):
 
 def export_uudm_scene(mesh_uudm_pairs, filepath):
     """Exports meshes and attaches UUDM extras strictly to mesh-bearing nodes."""
+    os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
     meshes = [pair[0] for pair in mesh_uudm_pairs]
     metadata_list = [pair[1] for pair in mesh_uudm_pairs]
     
@@ -50,6 +51,7 @@ def export_uudm_scene(mesh_uudm_pairs, filepath):
 
 def export_ladm_parcel(parcel_mesh, parcel_id, filepath):
     """Exports parcel mesh with LADM ExtSpatialClaim extras."""
+    os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
     scene = trimesh.Scene([parcel_mesh])
     scene.export(filepath)
     
@@ -77,7 +79,7 @@ def export_ladm_parcel(parcel_mesh, parcel_id, filepath):
 # ==============================================================================
 parcel_A = trimesh.creation.box(extents=[20.0, 4.0, 15.0])
 parcel_A.apply_translation([10.0, 0.0, -7.5])
-export_ladm_parcel(parcel_A, "Scenario_A_Footway_Parcel", "parcel_scenario_A.glb")
+export_ladm_parcel(parcel_A, "Scenario_A_Footway_Parcel", "data-synth/parcel_scenario_A.glb")
 
 utils_A = []
 configs_A = [
@@ -105,7 +107,7 @@ for cfg in configs_A:
     }
     utils_A.append((pipe, uudm))
 
-export_uudm_scene(utils_A, "utils_scenario_A.glb")
+export_uudm_scene(utils_A, "data-synth/utils_scenario_A.glb")
 
 # ==============================================================================
 # SCENARIO B: DRAINAGE RESERVE (Low Shallow, High Intermediate, Low Deep)
@@ -113,7 +115,7 @@ export_uudm_scene(utils_A, "utils_scenario_A.glb")
 # ==============================================================================
 parcel_B = trimesh.creation.box(extents=[30.0, 10.0, 15.0])
 parcel_B.apply_translation([15.0, 0.0, -7.5])
-export_ladm_parcel(parcel_B, "Scenario_B_Drainage_Reserve", "parcel_scenario_B.glb")
+export_ladm_parcel(parcel_B, "Scenario_B_Drainage_Reserve", "data-synth/parcel_scenario_B.glb")
 
 utils_B = []
 # 1 minor telecom in shallow
@@ -138,7 +140,7 @@ utils_B.append((box2, {
     "depthStart_m": -5.0, "depthEnd_m": -5.0, "operator": "PUB", "dataStandard": "Singapore_UUDM"
 }))
 
-export_uudm_scene(utils_B, "utils_scenario_B.glb")
+export_uudm_scene(utils_B, "data-synth/utils_scenario_B.glb")
 
 # ==============================================================================
 # SCENARIO C: MRT TRANSIT CORRIDOR (Low Shallow & Intermediate, High Deep)
@@ -146,7 +148,7 @@ export_uudm_scene(utils_B, "utils_scenario_B.glb")
 # ==============================================================================
 parcel_C = trimesh.creation.box(extents=[40.0, 25.0, 30.0])
 parcel_C.apply_translation([20.0, 0.0, -15.0])
-export_ladm_parcel(parcel_C, "Scenario_C_Transit_Corridor", "parcel_scenario_C.glb")
+export_ladm_parcel(parcel_C, "Scenario_C_Transit_Corridor", "data-synth/parcel_scenario_C.glb")
 
 utils_C = []
 # Minor water pipe in shallow
@@ -169,4 +171,4 @@ utils_C.append((tun2, {
     "depthStart_m": -21.0, "depthEnd_m": -21.0, "operator": "LTA", "dataStandard": "Singapore_UUDM"
 }))
 
-export_uudm_scene(utils_C, "utils_scenario_C.glb")
+export_uudm_scene(utils_C, "data-synth/utils_scenario_C.glb")

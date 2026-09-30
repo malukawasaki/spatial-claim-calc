@@ -5,9 +5,12 @@ Each plot title explicitly reports:
 "Shallow Layer: ... | Intermediate Layer: ... | Deep Layer: ..."
 """
 
+import os
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+
+os.makedirs("figure", exist_ok=True)
 
 def draw_bounding_box(ax, x_limits, y_limits, z_limits, color="#a569bd", linewidth=1.2, label="Parcel Bounding Box"):
     """Draws the 12 wireframe edges of a 3D rectangular cadastral parcel."""
@@ -73,7 +76,7 @@ format_3d_axes(
     "Scenario A: Dense Commercial Footway\nShallow Layer: HIGH (51.2%)  |  Intermediate Layer: LOW (0.0%)  |  Deep Layer: LOW (0.0%)"
 )
 plt.tight_layout()
-plt.savefig("Scenario_A_Shallow_High.png")
+plt.savefig("figure/Scenario_A_Shallow_High.png")
 plt.close(fig_a)
 
 # ==============================================================================
@@ -96,7 +99,7 @@ format_3d_axes(
     "Scenario B: Municipal Drainage Reserve\nShallow Layer: LOW (3.8%)  |  Intermediate Layer: HIGH (42.6%)  |  Deep Layer: LOW (0.0%)"
 )
 plt.tight_layout()
-plt.savefig("Scenario_B_Intermediate_High.png")
+plt.savefig("figure/Scenario_B_Intermediate_High.png")
 plt.close(fig_b)
 
 # ==============================================================================
@@ -119,7 +122,7 @@ format_3d_axes(
     "Scenario C: RTS Railway Protection Reserve\nShallow Layer: LOW (2.1%)  |  Intermediate Layer: LOW (1.4%)  |  Deep Layer: HIGH (28.4%)"
 )
 plt.tight_layout()
-plt.savefig("Scenario_C_Deep_High.png")
+plt.savefig("figure/Scenario_C_Deep_High.png")
 plt.close(fig_c)
 
 # ==============================================================================
@@ -144,5 +147,5 @@ format_3d_axes(
     "Scenario D: Multi-Utility Urban Boulevard\nShallow Layer: MEDIUM (28.5%)  |  Intermediate Layer: MEDIUM (22.1%)  |  Deep Layer: LOW (0.0%)"
 )
 plt.tight_layout()
-plt.savefig("Scenario_D_Balanced_Medium.png")
+plt.savefig("figure/Scenario_D_Balanced_Medium.png")
 plt.close(fig_d)

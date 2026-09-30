@@ -12,16 +12,19 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 import numpy as np
+import os
 import trimesh
 
 from SpatialClaimCalc import load_uudm_glb, load_ladm_parcel_glb
 
 def render_uudm_ladm_white(
-    parcel_glb: str = "sample_ladm_parcel.glb",
-    utilities_glb: str = "sample_uudm_utilities.glb",
-    output_png: str = "sample_geometry_preview.png",
-    dual_output_png: str = "sample_uudm_ladm_white.png"
+    parcel_glb: str = "data-synth/sample_ladm_parcel.glb",
+    utilities_glb: str = "data-synth/sample_uudm_utilities.glb",
+    output_png: str = "figure/sample_geometry_preview.png",
+    dual_output_png: str = "figure/sample_uudm_ladm_white.png"
 ):
+    os.makedirs(os.path.dirname(output_png) or ".", exist_ok=True)
+    os.makedirs(os.path.dirname(dual_output_png) or ".", exist_ok=True)
     print(f"Loading {parcel_glb} and {utilities_glb}...")
     parcel_mesh, parcel_meta = load_ladm_parcel_glb(parcel_glb)
     utilities = load_uudm_glb(utilities_glb)
